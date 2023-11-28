@@ -2,15 +2,17 @@ import express from 'express';
 import path from 'path';
 import handlebars from 'express-handlebars';
 import ProductManager from './ProductManager.js';
-import CartManager from '../Router/CartRouter.js';
+import CartManager from '../Router/cart.router.js';
 import { init } from './socket.servidor.js';
-
 
 import { __dirname } from '../utils.js';
 import indexRouter from '../Router/index.router.js';
+import cookieParser from 'cookie-parser';
 
 const app = express();
+const COOKIE_SECRET = "PASSWORD"
 
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '../public')));
@@ -73,10 +75,8 @@ app.delete('/products/:pid', async (req, res) => {
     }
 });
 
-
 const httpServer = app.listen(8080, () => {
-    console.log('Servidor escuchando en el puerto 8080');
+    console.log('Server ON PORT 8080');
 });
 
 init(httpServer)
-//Crear un router aparte para los productos. llevar a un archivo aparte y importarlo.
