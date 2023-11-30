@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import mongoosePaginate from 'mongoo-paginate-v2';
 
-const studentSchema = new mongoose.Schema({
+const productSchema = new mongoose.Schema({
     first_name: String,
     last_name: String,
     email: String,
@@ -11,5 +11,5 @@ const studentSchema = new mongoose.Schema({
 
 },{ timestamps: true });
 
-studentSchema.plugin(mongoosePaginate);
-export default mongoose.model('Student', studentSchema);
+productSchema.plugin(mongoosePaginate);
+export default mongoose.model('Student', productSchema);

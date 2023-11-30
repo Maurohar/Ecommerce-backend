@@ -1,5 +1,7 @@
 import path from 'path';
-import url from 'url'; //para obtener el directorio actual
+import url from 'url';
 
 const __filename = url.fileURLToPath(import.meta.url);
-export const __dirname = path.dirname(__filename);
+const __dirname = path.dirname(__filename);
+
+export { __dirname };

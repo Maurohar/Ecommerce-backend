@@ -2,26 +2,47 @@ import express from 'express';
 import path from 'path';
 import handlebars from 'express-handlebars';
 import ProductManager from './ProductManager.js';
-import CartManager from '../Router/cart.router.js';
+import CartManager from './CartManager.js';
 import { init } from './socket.servidor.js';
 
 import { __dirname } from '../utils.js';
-import indexRouter from '../Router/index.router.js';
+
+//creo que s por aca
+import homeRouter from '../Router/home.router.js';
+import chatRouter from '../Router/chat.router.js';
+import cartRouter from '../Router/cart.router.js';
 import cookieParser from 'cookie-parser';
 
 const app = express();
-const COOKIE_SECRET = "PASSWORD"
+const COOKIE_SECRET = "_9Wky2.g\EE9"
 
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, '../public')));
+
+
+//aca servimos la carpeta public 
+// app.use(express.static('public'));
+// app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '..', 'public', 'css')));
+app.use(express.static(path.join(__dirname, '..', 'public')));
+
+
+app.use('/', homeRouter);
+app.use('/chat', chatRouter);
+app.use('/cart', cartRouter);
+
+
+// app.get('/chat', async (req, res) => {
+//     res.send("hola desde app.js")
+// })
+
 
 app.engine('handlebars', handlebars.engine());
 app.set('views', path.join(__dirname,'views'));
 app.set('view engine', 'handlebars');
 
-app.use('/', indexRouter);
+
 
 app.use((error, req, res, next) =>{
     const message = `Ah ocurrido un error desconocido.. ${error.message}`;
