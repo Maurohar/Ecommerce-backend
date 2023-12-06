@@ -1,22 +1,25 @@
 import express from 'express';
 import path from 'path';
 import handlebars from 'express-handlebars';
+import cookieParser from 'cookie-parser';
 import ProductManager from './ProductManager.js';
 import CartManager from './CartManager.js';
 import { init } from './socket.servidor.js';
-
 import { __dirname } from '../utils.js';
 
-//creo que s por aca
+
+
 import homeRouter from '../Router/home.router.js';
 import chatRouter from '../Router/chat.router.js';
 import cartRouter from '../Router/cart.router.js';
-import cookieParser from 'cookie-parser';
+import cookieRouter from '../Router/cookie.router.js';
+import accountRouter from '../Router/account.router.js';
 
 const app = express();
 const COOKIE_SECRET = "_9Wky2.g\EE9"
 
-app.use(cookieParser());
+
+app.use(cookieParser(COOKIE_SECRET));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -27,31 +30,32 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '..', 'public', 'css')));
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
+//app.use(express.static(path.join(__dirname, '..', 'public', 'css', 'boxicons')));
+//app.use('/css', express.static(path.join(__dirname, '..', 'public', 'css'), { 'extensions': ['css'], 'index': false, 'setHeaders': (res, path) => { res.type('text/css'); } }));
+
+
+
 
 app.use('/', homeRouter);
 app.use('/chat', chatRouter);
+app.use('/login', accountRouter);
 app.use('/cart', cartRouter);
-
-
-// app.get('/chat', async (req, res) => {
-//     res.send("hola desde app.js")
-// })
-
+app.use('/', cookieRouter);
 
 app.engine('handlebars', handlebars.engine());
-app.set('views', path.join(__dirname,'views'));
+app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'handlebars');
 
 
 
-app.use((error, req, res, next) =>{
+app.use((error, req, res, next) => {
     const message = `Ah ocurrido un error desconocido.. ${error.message}`;
     console.error(message);
     res.status(500).json({ message });
 });
 
 const productManager = new ProductManager();
-app.use('/api' , CartManager);
+app.use('/api', CartManager);
 
 app.post('/products', async (req, res) => {
     const newProduct = req.body;
@@ -77,7 +81,7 @@ app.get('/products', (req, res) => {
 
 app.get('/products/:pid', async (req, res) => {
     const { pid } = req.params;
-    const product = productManager.getProductById(parseInt(pid));B
+    const product = productManager.getProductById(parseInt(pid)); B
     if (!product) {
         res.json({ error: 'Producto no encontrado.' });
     } else {

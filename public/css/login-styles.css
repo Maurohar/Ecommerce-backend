@@ -1,0 +1,29 @@
+*{
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background: url('../images/fondo-log.jpg') center center fixed;
+    background-size: cover;
+    font-family: Arial, sans-serif;
+}
+
+.login-container {
+    width: 300px; /* ajusta según tus necesidades */
+    margin: 100px auto;
+    background: rgba(255, 255, 255, 0.8); /* fondo semi-transparente para que el texto sea legible */
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+section{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    min-height: 100vh;
+    background: url;
+}
