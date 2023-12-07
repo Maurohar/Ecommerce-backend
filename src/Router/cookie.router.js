@@ -6,13 +6,13 @@ router.get('/', (req, res) => {
     res.cookie('cookie-1').cookie('cookie-2').send('Hello Ruta Cookie aqui');
 });
 
-router.get('/setCookieSigned', (req, res) => {
-    res.cookie('cookie-1-signed', 'cookie configurada con éxito', { signed: true }).send('Cookie configurada con éxito.');
-});
-
-router.get('/getCookieSigned', (req, res) => {
-    const signedCookie = req.signedCookies['cookie-1-signed'];
-    res.json({ 'cookie-1-signed': signedCookie });
+router.post('/api/cookie', (req, res) => {
+    const { fullname, email } = req.body;
+    console.log('fullname, email', fullname, email);
+    res
+        .cookie('fullname', fullname)
+        .cookie('email', email)
+        .redirect('/');
 });
 
 router.get('/setCookie', (req, res) => {
@@ -27,6 +27,17 @@ router.get('/getCookie', (req, res) => {
 
 router.get('/clearCookie', (req, res) => {
     res.clearCookie('secret-cookie').send('I ate the cookie.');
+});
+
+router.get('/setCookieSigned', (req, res) => {
+    res
+        .cookie('cookie-1-signed', 'cookie configurada con éxito', { signed: true })
+        .send('Cookie configurada con éxito.');
+});
+
+router.get('/getCookieSigned', (req, res) => {
+    const signedCookie = req.signedCookies['cookie-1-signed'];
+    res.json({ 'cookie-1-signed': signedCookie });
 });
 
 export default router;

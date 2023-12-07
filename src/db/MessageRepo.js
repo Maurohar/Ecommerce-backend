@@ -8,26 +8,26 @@ class MessageRepo {
   }
 
   async SaveMessage(user, message) {
-    var url = 'mongodb+srv://mauroharmitton:Password1@cluster0.453yel4.mongodb.net/Chat?retryWrites=true&w=majority';
+    let url = 'mongodb+srv://mauroharmitton:Password1@cluster0.453yel4.mongodb.net/Chat?retryWrites=true&w=majority';
     pkg.connect(url);
 
-    var db = pkg.connection;
+    let db = pkg.connection;
 
     db.on("error", console.error.bind(console, "connection error:"));
 
     db.once("open", function () {
       console.log("Connection Successful!");
     });
+c
+    let dbName = 'Chat';
+    let dbCollection = 'messages';
 
-    var dbName = 'Chat';
-    var dbCollection = 'messages';
-
-    var schema = new pkg.Schema({
+    let schema = new pkg.Schema({
       user: String,
       message: String
     })
 
-    var MessageSchema = pkg.model(message, schema, dbCollection)
+    let MessageSchema = pkg.model(message, schema, dbCollection)
 
 
     const mongoMessage = new MessageSchema({

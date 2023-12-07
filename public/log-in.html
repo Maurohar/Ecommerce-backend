@@ -14,14 +14,10 @@
             background: url('../public/images/fondo-log.jpg');
             background-size: cover;
             font-family: 'Poppins', sans-serif;
-        }
-
-        .container-principal {
-            width: 100%;
-            height: 100vh;
             display: flex;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
+            height: 100vh;
         }
 
         .form {
@@ -29,23 +25,25 @@
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 300px; /* ajusta según tus necesidades */
+            width: 300px;
+            text-align: center;
         }
 
         .input-container {
             position: relative;
-            margin-bottom: 20px;
+            margin-bottom: 50px;
         }
 
         .input-container i {
             position: absolute;
-            top: 10px;
-            left: 10px;
+            top: 50%;
+            left: 5px;
+            transform: translateY(-20%);
             color: #555;
         }
 
         .input-container input {
-            width: 100%;
+            width: calc(100% - 22px);
             padding: 12px;
             box-sizing: border-box;
             border: none;
@@ -56,16 +54,19 @@
         }
 
         .input-container label {
+            display: flex;
+            align-items: center; /* Alinea el contenido verticalmente */
             position: absolute;
-            top: 10px;
+            top: 50%;
             left: 40px;
+            transform: translateY(-50%);
             pointer-events: none;
             transition: 0.5s;
             color: #555;
         }
 
-        .input-container input:focus + label,
-        .input-container input:valid + label {
+        .input-container input:focus+label,
+        .input-container input:valid+label {
             top: -12px;
             font-size: 12px;
             color: #e44d26;
@@ -81,44 +82,60 @@
         }
 
         .register {
+            display: flex;
+            align-items: center;
+            justify-content: center;
             margin-top: 20px;
+            font-size: 15px;
+            color: #afacaccd;
+        }
+
+        .register a {
+            margin-left: 5px;
+            color: #e44d26;
+            text-decoration: none;
+        }
+
+        .text-container {
+            font-size: 12px;
+            color: #e44d26;
+            margin-bottom: 5px; /* Ajusta el margen según sea necesario */
+        }
+        .access-button{
+            margin-bottom: 25px;
         }
     </style>
 </head>
 
 <body>
     <section>
-        <div class="container-principal">
-            <div class="form">
-                <form action="#">
-                    <h2>Log In</h2>
-                    <div class="input-container">
-                        <i class="fa-solid fa-envelope"></i>
-                        <input type="email" required>
-                        <label for="#">Email</label>
-                    </div>
-                    <div class="input-container">
-                        <i class="fa-solid fa-lock"></i>
-                        <input type="password" required>
-                        <label for="#">Password</label>
-                    </div>
-                    <div class="input-container">
-                        <label for="#">
-                            <input type="checkbox" required>
-                            <a href="#">I Forget the Password.</a>
-                        </label>
-                    </div>
-                </form>
-                <div>
-                    <button>Access</button>
-                    <div class="register">
-                        <p>I Dont have Acount.</p>
-                    </div>
+        <div class="form">
+            <form action="/login">
+                <h2>Log In</h2>
+                <div class="input-container">
+                    <i class="fa-solid fa-envelope"></i>
+                    <input type="email" required>
+                    <label for="#">Email</label>
                 </div>
+
+                <div class="input-container">
+                    <i class="fa-solid fa-lock"></i>
+                    <input type="password" required>
+                    <label for="#">Password</label>
+                </div>
+
+                <button class="access-button" type="submit">Access</button>
+            </form>
+
+            <div class="input-container">
+                <input type="checkbox" id="createAccount"> <!-- VER REQUIRED -->
+                <label class="text-container" for="createAccount">Acepto los términos y condiciones</label>
+                <a src="../public//register-session.html" class="register">here</a> <!-- VER SOLO SE CONSERVA LA COOKIE EN EL LOG IN Y NO EN EL REGISTRO -->
+                <span class="text-container">Create a new account</span>
             </div>
         </div>
     </section>
-
+    <script src="../src/Router/cookie.router.js"></script>
     <script src="https://kit.fontawesome.com/4e3a9ecd39.js" crossorigin="anonymous"></script>
 </body>
 

@@ -1,66 +1,30 @@
-import { Router } from 'express';
-import UserModel from '../models/schema.users.js';
-import path from 'path';
-import { __dirname } from '../utils.js';
+import express from 'express';
+import User from '../models/schema.users.js'; // Ajusta la importación según tu ruta
+import bodyParser from 'body-parser';
 
+const router = express.Router();
 
-const router = Router(); // llamamos a la funcion del modulo Router de express
+// Ruta para obtener el registro del cliente por ID
+router.get('/api/usuario/:id', async (req, res) => {
+    const userId = req.params.id;
 
-router.get('/users', async (req, res, next) => {
     try {
-        const users = await UserModel.find({});
-        res.status(200).json(users);
-    } catch (error) {
-        next(error);
-    }
-});
-
-router.get('/users/:uid', async (req, res, next) => {
-    try {
-        const { params: { uid } } = req;
-        const user = await UserModel.findById(uid);
-        if (!user) {
-            return res.status(404).json({ message: `User id ${uid} not found.` });
+        const user = await User.findById(userId);
+        if (user) {
+            // Filtrar la información sensible antes de enviarla al cliente
+            const userWithoutPassword = {
+                _id: user._id,
+                fullname: user.fullname,
+                email: user.email,
+                // Otros campos que desees incluir
+            };
+            res.json(userWithoutPassword);
+        } else {
+            res.status(404).json({ error: 'Usuario no encontrado' });
         }
-        res.status(200).json(user);
     } catch (error) {
-        next(error);
-    }
-});
-
-router.post('/users', async (req, res, next) => {
-    try {
-        const { body } = req;
-        const user = await UserModel.create(body);
-        res.status(201).json(user);
-    } catch (error) {
-        next(error);
-    }
-});
-
-router.put('/users/:uid', async (req, res, next) => {
-    try {
-        const { body, params: { uid } } = req;
-        const updatedUser = await UserModel.findByIdAndUpdate(uid, body, { new: true });
-        if (!updatedUser) {
-            return res.status(404).json({ message: `User id ${uid} not found.` });
-        }
-        res.status(200).json(updatedUser);
-    } catch (error) {
-        next(error);
-    }
-});
-
-router.delete('/users/:uid', async (req, res, next) => {
-    try {
-        const { params: { uid } } = req;
-        const deletedUser = await UserModel.findByIdAndDelete(uid);
-        if (!deletedUser) {
-            return res.status(404).json({ message: `User id ${uid} not found.` });
-        }
-        res.status(204).end();
-    } catch (error) {
-        next(error);
+        console.error('Error al obtener el usuario:', error);
+        res.status(500).send('Error interno del servidor');
     }
 });
 

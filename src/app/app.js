@@ -1,11 +1,15 @@
 import express from 'express';
 import path from 'path';
 import handlebars from 'express-handlebars';
+//import bodyParser from 'body-parser';
+//import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import ProductManager from './ProductManager.js';
 import CartManager from './CartManager.js';
 import { init } from './socket.servidor.js';
 import { __dirname } from '../utils.js';
+import mongoose from 'mongoose';
+
 
 
 
@@ -13,40 +17,54 @@ import homeRouter from '../Router/home.router.js';
 import chatRouter from '../Router/chat.router.js';
 import cartRouter from '../Router/cart.router.js';
 import cookieRouter from '../Router/cookie.router.js';
+import userRouter from '../Router/users.router.js';
 import accountRouter from '../Router/account.router.js';
+import registerRouter from '../Router/register.router.js';
+
+
+//import UserRouter from '../models/schema.users.js';
 
 const app = express();
-const COOKIE_SECRET = "_9Wky2.g\EE9"
 
+const COOKIE_SECRET = "+{bOJv[++Dh38b)t)?AwD.W£62>C~`"
+mongoose.connect('mongodb+srv://mauroharmitton:Password1@cluster0.453yel4.mongodb.net/Users', {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+});
 
 app.use(cookieParser(COOKIE_SECRET));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 
-//aca servimos la carpeta public 
-// app.use(express.static('public'));
-// app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, '..', 'public', 'css')));
 app.use(express.static(path.join(__dirname, '..', 'public')));
-
-//app.use(express.static(path.join(__dirname, '..', 'public', 'css', 'boxicons')));
-//app.use('/css', express.static(path.join(__dirname, '..', 'public', 'css'), { 'extensions': ['css'], 'index': false, 'setHeaders': (res, path) => { res.type('text/css'); } }));
-
-
 
 
 app.use('/', homeRouter);
 app.use('/chat', chatRouter);
 app.use('/login', accountRouter);
+app.use('/register', registerRouter);
 app.use('/cart', cartRouter);
-app.use('/', cookieRouter);
+app.use('/cookies', cookieRouter);
 
 app.engine('handlebars', handlebars.engine());
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'handlebars');
 
+app.post('/register', (req, res) => {
+    const { firstName, lastName, email, password } = req.body;
 
+    // Usa userRepo para guardar datos sensibles
+    userRepo.saveSensitiveData(firstName, lastName, email, password)
+        .then(() => {
+            res.status(201).json({ message: 'Usuario registrado exitosamente.' });
+        })
+        .catch((error) => {
+            console.error('Error al registrar usuario:', error);
+            res.status(500).json({ error: 'Error interno del servidor.' });
+        });
+});
 
 app.use((error, req, res, next) => {
     const message = `Ah ocurrido un error desconocido.. ${error.message}`;
