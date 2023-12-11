@@ -4,14 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../public/css/login-styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <title>Log in | Red Store</title>
     <style>
         body {
             margin: 0;
             padding: 0;
-            background: url('../public/images/fondo-log.jpg');
             background-size: cover;
             font-family: 'Poppins', sans-serif;
             display: flex;
@@ -20,7 +18,7 @@
             height: 100vh;
         }
 
-        .form {
+        .LoginForm {
             background: rgba(255, 255, 255, 0.8);
             padding: 20px;
             border-radius: 8px;
@@ -31,7 +29,7 @@
 
         .input-container {
             position: relative;
-            margin-bottom: 50px;
+            margin-bottom: 20px; /* Ajuste de espacio */
         }
 
         .input-container i {
@@ -55,7 +53,7 @@
 
         .input-container label {
             display: flex;
-            align-items: center; /* Alinea el contenido verticalmente */
+            align-items: center;
             position: absolute;
             top: 50%;
             left: 40px;
@@ -99,9 +97,10 @@
         .text-container {
             font-size: 12px;
             color: #e44d26;
-            margin-bottom: 5px; /* Ajusta el margen según sea necesario */
+            margin-bottom: 5px;
         }
-        .access-button{
+
+        .access-button {
             margin-bottom: 25px;
         }
     </style>
@@ -109,19 +108,19 @@
 
 <body>
     <section>
-        <div class="form">
-            <form action="/login">
+        <div class="LoginForm">
+            <form id="loginForm" action="/login">
                 <h2>Log In</h2>
                 <div class="input-container">
                     <i class="fa-solid fa-envelope"></i>
-                    <input type="email" required>
-                    <label for="#">Email</label>
+                    <input type="email" id="email" name="email" required>
+                    <label for="email">Email</label>
                 </div>
 
                 <div class="input-container">
                     <i class="fa-solid fa-lock"></i>
-                    <input type="password" required>
-                    <label for="#">Password</label>
+                    <input type="password" id="password" name="password" required autocomplete="current-password">
+                    <label for="password">Password:</label>
                 </div>
 
                 <button class="access-button" type="submit">Access</button>
@@ -129,13 +128,13 @@
 
             <div class="input-container">
                 <input type="checkbox" id="createAccount"> <!-- VER REQUIRED -->
-                <label class="text-container" for="createAccount">Acepto los términos y condiciones</label>
-                <a src="../public//register-session.html" class="register">here</a> <!-- VER SOLO SE CONSERVA LA COOKIE EN EL LOG IN Y NO EN EL REGISTRO -->
-                <span class="text-container">Create a new account</span>
+                <label class="text-container" for="createAccount">I accept the terms and conditions</label>
+                <a href="/register" method="post">Create a new account</a> <!-- CORREGIDO EL ENLACE -->
             </div>
         </div>
     </section>
-    <script src="../src/Router/cookie.router.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://kit.fontawesome.com/4e3a9ecd39.js" crossorigin="anonymous"></script>
 </body>
 

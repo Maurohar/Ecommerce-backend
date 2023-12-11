@@ -9,11 +9,11 @@ export const init = (httpServer) => {
         console.log(`Nuevo cliente socket conectado
         ${socketClient.
                 id}`);
-        socketClient.emit('client-emit', { status: "ok" });                //el evento se llama start o init tambien
+        socketClient.emit('client-emit', { status: "ok" });
         socketClient.broadcast.emit('broadcast-emit', {
             status:
                 "ok"
-        });     //brodcast hace que se emita TODOS los mensajes a TODOS los clientes.
+        });
 
         let newUser = "";
         socketClient.on('newuser', function (nick) {

@@ -1,6 +1,15 @@
 import { Router } from 'express';
+import cookieParser from 'cookie-parser';
 
 const router = Router();
+
+router.use(cookieParser());
+
+
+router.get('/src/Router/cookie.router.js', (req, res) => {
+    const filePath = path.join(__dirname, 'src', 'Router', 'cookie.router.js');
+    res.sendFile(filePath, { type: 'application/javascript' });
+});
 
 router.get('/', (req, res) => {
     res.cookie('cookie-1').cookie('cookie-2').send('Hello Ruta Cookie aqui');
@@ -15,7 +24,7 @@ router.post('/api/cookie', (req, res) => {
         .redirect('/');
 });
 
-router.get('/setCookie', (req, res) => {
+router.post('/setCookie', (req, res) => {
     res.cookie('secret-cookie', 'esta es una cookie', { maxAge: 20000, signed: true })
         .send('La cookie fue realizada con éxito y la configuración de la cookie fue exitosa.');
 });
@@ -29,7 +38,7 @@ router.get('/clearCookie', (req, res) => {
     res.clearCookie('secret-cookie').send('I ate the cookie.');
 });
 
-router.get('/setCookieSigned', (req, res) => {
+router.post('/setCookieSigned', (req, res) => {
     res
         .cookie('cookie-1-signed', 'cookie configurada con éxito', { signed: true })
         .send('Cookie configurada con éxito.');

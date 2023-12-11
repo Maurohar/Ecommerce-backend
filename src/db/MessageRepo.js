@@ -18,7 +18,7 @@ class MessageRepo {
     db.once("open", function () {
       console.log("Connection Successful!");
     });
-c
+
     let dbName = 'Chat';
     let dbCollection = 'messages';
 

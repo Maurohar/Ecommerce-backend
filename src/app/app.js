@@ -1,8 +1,7 @@
 import express from 'express';
 import path from 'path';
 import handlebars from 'express-handlebars';
-//import bodyParser from 'body-parser';
-//import cors from 'cors';
+import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import ProductManager from './ProductManager.js';
 import CartManager from './CartManager.js';
@@ -13,13 +12,15 @@ import mongoose from 'mongoose';
 
 
 
+
 import homeRouter from '../Router/home.router.js';
 import chatRouter from '../Router/chat.router.js';
 import cartRouter from '../Router/cart.router.js';
 import cookieRouter from '../Router/cookie.router.js';
-import userRouter from '../Router/users.router.js';
-import accountRouter from '../Router/account.router.js';
-import registerRouter from '../Router/register.router.js';
+import UserRegisterRouter from '../Router/users.router.js';
+import UsersRepo from '../db/LoginRepo.js';
+
+
 
 
 //import UserRouter from '../models/schema.users.js';
@@ -27,50 +28,77 @@ import registerRouter from '../Router/register.router.js';
 const app = express();
 
 const COOKIE_SECRET = "+{bOJv[++Dh38b)t)?AwD.W£62>C~`"
-mongoose.connect('mongodb+srv://mauroharmitton:Password1@cluster0.453yel4.mongodb.net/Users', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
+
+
+app.get('/src/db/SaveSensitiveRepo.js', (req, res) => {
+    try {
+        // Lógica para leer y enviar el archivo
+        res.sendFile(path.join(__dirname, 'src', 'db', 'SaveSensitiveRepo.js'));
+    } catch (error) {
+        console.error('Error al enviar el archivo:', error);
+        res.status(500).send('Internal Server Error');
+    }
 });
+
 
 app.use(cookieParser(COOKIE_SECRET));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-
+app.use('/src', express.static(path.join(__dirname, 'src')));
 app.use(express.static(path.join(__dirname, '..', 'public', 'css')));
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
-
 app.use('/', homeRouter);
 app.use('/chat', chatRouter);
-app.use('/login', accountRouter);
-app.use('/register', registerRouter);
+app.use('/login', UserRegisterRouter);
 app.use('/cart', cartRouter);
-app.use('/cookies', cookieRouter);
+app.use('/register', UserRegisterRouter);
+
+
 
 app.engine('handlebars', handlebars.engine());
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'handlebars');
-
-app.post('/register', (req, res) => {
-    const { firstName, lastName, email, password } = req.body;
-
-    // Usa userRepo para guardar datos sensibles
-    userRepo.saveSensitiveData(firstName, lastName, email, password)
-        .then(() => {
-            res.status(201).json({ message: 'Usuario registrado exitosamente.' });
-        })
-        .catch((error) => {
-            console.error('Error al registrar usuario:', error);
-            res.status(500).json({ error: 'Error interno del servidor.' });
-        });
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).send('Internal Server Error');
 });
+
 
 app.use((error, req, res, next) => {
     const message = `Ah ocurrido un error desconocido.. ${error.message}`;
     console.error(message);
     res.status(500).json({ message });
 });
+
+
+// Ruta de inicio de sesión
+app.post('/login', (req, res) => {
+    const { username, password } = req.body;
+    // Aquí deberías realizar la lógica de autenticación
+    // (por ejemplo, verificar las credenciales en una base de datos)
+    // Simulación: Si las credenciales son válidas, establece la cookie
+    if (username === 'user' && password === 'password') {
+        res.cookie('user', username).json({ message: 'Inicio de sesión exitoso' });
+    } else {
+        res.status(401).json({ message: 'Credenciales inválidas' });
+    }
+});
+
+// Ruta protegida que requiere autenticación
+app.get('/dashboard', (req, res) => {
+    const user = req.cookies['user'];
+    // Realiza acciones adicionales basadas en la cookie, como consultar datos en MongoDB
+    res.send(`Hola, ${user}! Bienvenido al dashboard.`);
+});
+
+
+
+
+
+//*Productos*/
+
 
 const productManager = new ProductManager();
 app.use('/api', CartManager);

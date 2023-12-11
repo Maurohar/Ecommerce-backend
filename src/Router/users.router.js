@@ -1,31 +1,88 @@
-import express from 'express';
-import User from '../models/schema.users.js'; // Ajusta la importación según tu ruta
-import bodyParser from 'body-parser';
+import path from 'path';
+import { Router } from 'express';
+import { __dirname } from '../utils.js';
+import userloginModel from '../models/schema.users.js';
+import bcrypt from 'bcrypt';
 
-const router = express.Router();
+const router = Router();
 
-// Ruta para obtener el registro del cliente por ID
-router.get('/api/usuario/:id', async (req, res) => {
-    const userId = req.params.id;
+router.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'public', 'log-in.html'));
+});
 
-    try {
-        const user = await User.findById(userId);
-        if (user) {
-            // Filtrar la información sensible antes de enviarla al cliente
-            const userWithoutPassword = {
-                _id: user._id,
-                fullname: user.fullname,
-                email: user.email,
-                // Otros campos que desees incluir
-            };
-            res.json(userWithoutPassword);
-        } else {
-            res.status(404).json({ error: 'Usuario no encontrado' });
-        }
-    } catch (error) {
-        console.error('Error al obtener el usuario:', error);
-        res.status(500).send('Error interno del servidor');
+router.get('/register', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'public', 'register-session.html'));
+});
+
+router.post("/login", async (req, res) => {
+    const {
+        body: { email, password }
+    } = req;
+    if (!email || !password) {
+        return res.render("error", {
+            title: "Error",
+            messageError: "Both email and password are required."
+        });
     }
+
+    const user = await userloginModel.findOne({ email });
+
+    if (!user) {
+        return res.render("error", { title: "Error" });
+    }
+
+    const isPasswordMatch = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordMatch) {
+        return res.render("error", {
+            title: "Error",
+            messageError: "Invalid password."
+        });
+    }
+
+    const { first_name, last_name, age, role } = user;
+
+    req.session.user = {
+        first_name,
+        last_name,
+        email,
+        role,
+        age
+    };
+    res.redirect("/profile");
+});
+
+router.post("/register", async (req, res) => {
+    const {
+        body: { first_name, last_name, email, password, age }
+    } = req;
+
+    if (!first_name || !last_name || !email || !password) {
+        return res.render("error", {
+            title: "Error",
+            messageError: "All fields are required."
+        });
+    }
+
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await userloginModel.create({
+        first_name,
+        last_name,
+        email,
+        password: hashedPassword,
+        age
+    });
+    res.redirect("/login");
+});
+
+router.get("/me", (req, res) => {
+    if (!req.session.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    res.status(200).json(req.session.user);
 });
 
 export default router;
