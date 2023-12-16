@@ -3,6 +3,9 @@ import path from 'path';
 import handlebars from 'express-handlebars';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
+import session from 'express-session'; // Importa express-session
+import passport from 'passport'; // Importa passport
+import LocalStrategy from 'passport-local'; // Importa la estrategia local
 import bcrypt from 'bcrypt';
 import mongoose from 'mongoose';
 import { init } from './socket.servidor.js';
@@ -48,17 +51,12 @@ app.use((error, req, res, next) => {
     res.status(500).json({ message });
 });
 
-mongoose.connect("mongodb+srv://mauroharmitton:Password1@cluster0.453yel4.mongodb.net/Users?retryWrites=true&w=majority", {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-});
+// Configuración de la sesión de Passport
+app.use(session({ secret: COOKIE_SECRET, resave: true, saveUninitialized: true }));
 
-const db = mongoose.connection;
-
-db.on('error', console.error.bind(console, 'Error de conexión a la base de datos:'));
-db.once('open', () => {
-    console.log('Conexión exitosa a la base de datos');
-});
+// Inicialización y configuración de Passport
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Definir el modelo User
 const userSchema = new mongoose.Schema({
@@ -72,67 +70,56 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
 
 const User = mongoose.model('User', userSchema);
 
-// Ruta de registro
-app.post('/register', async (req, res) => {
-    const { email, password } = req.body;
+// Configuración de la estrategia local de Passport
+passport.use(new LocalStrategy(
+    { usernameField: 'email' },
+    async (email, password, done) => {
+        try {
+            const user = await User.findOne({ email });
+            if (!user) {
+                return done(null, false, { message: 'Email no encontrado' });
+            }
 
-    try {
-        // Verificar si el usuario ya existe en la base de datos
-        const existingUser = await User.findOne({ email });
-        console.log(existingUser);
-        if (existingUser) {
-            return res.status(400).json({ message: 'El email ya existe' });
+            const isPasswordValid = await user.comparePassword(password);
+            if (!isPasswordValid) {
+                return done(null, false, { message: 'Contraseña incorrecta' });
+            }
+
+            return done(null, user);
+        } catch (error) {
+            return done(error);
         }
+    }
+));
 
-        // Hashear la contraseña antes de almacenarla en la base de datos
-        const hashedPassword = await bcrypt.hash(password, 10);
+// Serialización de usuario
+passport.serializeUser((user, done) => {
+    done(null, user.id);
+});
 
-        // Crear un nuevo usuario
-        const newUser = new User({
-            email,
-            password: hashedPassword,
-        });
-
-        // Guardar el nuevo usuario en la base de datos
-        await User.create(newUser);
-
-        res.status(201).redirect('/login');
+// Deserialización de usuario
+passport.deserializeUser(async (id, done) => {
+    try {
+        const user = await User.findById(id);
+        done(null, user);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error en el servidor' });
+        done(error);
     }
 });
+
+// Ruta de registro
+app.post('/register', passport.authenticate('local', {
+    successRedirect: '/login',
+    failureRedirect: '/register',
+    failureFlash: true,
+}));
 
 // Ruta de inicio de sesión
-app.post('/login', async (req, res) => {
-    const { email, password } = req.body;
-
-    try {
-        // Buscar el usuario en la base de datos
-        const user = await User.findOne({ email });
-
-        // Verificar si el usuario existe
-        if (!user) {
-            return res.status(404).json({ message: 'Email no encontrado' });
-        }
-
-        // Verificar la contraseña
-        const isPasswordValid = await user.comparePassword(password);
-        if (!isPasswordValid) {
-            return res.status(401).json({ message: 'Contraseña incorrecta' });
-        }
-
-        // Aquí puedes establecer una sesión o generar un token de autenticación
-        // Por ejemplo, podrías usar la biblioteca jsonwebtoken para generar un token
-
-        // ...
-
-        res.status(200).json({ message: 'Inicio de sesión exitoso' });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error en el servidor' });
-    }
-});
+app.post('/login', passport.authenticate('local', {
+    successRedirect: '/dashboard',
+    failureRedirect: '/login',
+    failureFlash: true,
+}));
 
 const httpServer = app.listen(8080, () => {
     console.log('Server ON PORT 8080');
