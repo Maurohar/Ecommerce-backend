@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <title>Create Account.</title>
     <style>
@@ -221,7 +222,7 @@
     <body>
         <section>
             <div class="form">
-                <form action="/api/session/register" method="post">
+                <form action="/register" method="post">
                     <h2>Create Account</h2>
                     <div class="input-container">
                         <i class="fa-solid fa-user"></i>
@@ -259,8 +260,7 @@
                 <div class="input-container">
                     <input type="checkbox" id="acceptTerms" required>
                     <label class="text-container" for="acceptTerms">I accept the terms and conditions</label required>
-                    <span class="text-container">Already have an account? <a method="post" action="/login">Log
-                            In</a></span>
+                    <span class="text-container">Already have an account? <a method="post" action="/login">Log-In</a></span>
                 </div>
             </div>
         </section>
@@ -269,7 +269,6 @@
 
     </html>
 
-    <script type="module" src="../src/db/SaveSensitiveRepo.js"></script>
     <script src="https://kit.fontawesome.com/4e3a9ecd39.js" crossorigin="anonymous"></script>
 </body>
 

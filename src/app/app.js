@@ -3,43 +3,25 @@ import path from 'path';
 import handlebars from 'express-handlebars';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
-import ProductManager from './ProductManager.js';
-import CartManager from './CartManager.js';
+import session from 'express-session';
+import passport from 'passport';
+import LocalStrategy from 'passport-local';
+import bcrypt from 'bcrypt';
+import mongoose from 'mongoose';
 import { init } from './socket.servidor.js';
 import { __dirname } from '../utils.js';
-import mongoose from 'mongoose';
-
-
-
-
 
 import homeRouter from '../Router/home.router.js';
 import chatRouter from '../Router/chat.router.js';
 import cartRouter from '../Router/cart.router.js';
 import cookieRouter from '../Router/cookie.router.js';
 import UserRegisterRouter from '../Router/users.router.js';
-import UsersRepo from '../db/LoginRepo.js';
-
-
-
-
-//import UserRouter from '../models/schema.users.js';
+import RegisterRouter from '../Router/register.router.js';
+import productRouter from '../Router/products.router.js';
 
 const app = express();
 
 const COOKIE_SECRET = "+{bOJv[++Dh38b)t)?AwD.W£62>C~`"
-
-
-app.get('/src/db/SaveSensitiveRepo.js', (req, res) => {
-    try {
-        // Lógica para leer y enviar el archivo
-        res.sendFile(path.join(__dirname, 'src', 'db', 'SaveSensitiveRepo.js'));
-    } catch (error) {
-        console.error('Error al enviar el archivo:', error);
-        res.status(500).send('Internal Server Error');
-    }
-});
-
 
 app.use(cookieParser(COOKIE_SECRET));
 app.use(express.json());
@@ -49,105 +31,90 @@ app.use('/src', express.static(path.join(__dirname, 'src')));
 app.use(express.static(path.join(__dirname, '..', 'public', 'css')));
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
-app.use('/', homeRouter);
+app.use('/home', homeRouter);
 app.use('/chat', chatRouter);
 app.use('/login', UserRegisterRouter);
-app.use('/cart', cartRouter);
-app.use('/register', UserRegisterRouter);
-
-
+app.use('/register', RegisterRouter);
+app.use('/products', productRouter);
 
 app.engine('handlebars', handlebars.engine());
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'handlebars');
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).send('Internal Server Error');
+app.use(session({ secret: COOKIE_SECRET, resave: true, saveUninitialized: true }));
+app.use(passport.initialize());
+app.use(passport.session());
+
+mongoose.connect("mongodb+srv://mauroharmitton:Password1@cluster0.453yel4.mongodb.net/Users?retryWrites=true&w=majority", {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
 });
 
+const db = mongoose.connection;
 
-app.use((error, req, res, next) => {
-    const message = `Ah ocurrido un error desconocido.. ${error.message}`;
-    console.error(message);
-    res.status(500).json({ message });
+db.on('error', console.error.bind(console, 'Error de conexión a la base de datos:'));
+db.once('open', () => {
+    console.log('Conexión exitosa a la base de datos');
 });
 
+// Definir el modelo User
+const userSchema = new mongoose.Schema({
+    email: String,
+    password: String,
+});
 
-// Ruta de inicio de sesión
-app.post('/login', (req, res) => {
-    const { username, password } = req.body;
-    // Aquí deberías realizar la lógica de autenticación
-    // (por ejemplo, verificar las credenciales en una base de datos)
-    // Simulación: Si las credenciales son válidas, establece la cookie
-    if (username === 'user' && password === 'password') {
-        res.cookie('user', username).json({ message: 'Inicio de sesión exitoso' });
-    } else {
-        res.status(401).json({ message: 'Credenciales inválidas' });
+userSchema.methods.comparePassword = async function (candidatePassword) {
+    return await bcrypt.compare(candidatePassword, this.password);
+};
+
+const User = mongoose.model('User', userSchema);
+
+passport.use(new LocalStrategy(
+    { usernameField: 'email' },
+    async (email, password, done) => {
+        try {
+            const user = await User.findOne({ email });
+
+            if (!user) {
+                return done(null, false, { message: 'Usuario no encontrado' });
+            }
+
+            const isPasswordValid = await user.comparePassword(password);
+
+            if (!isPasswordValid) {
+                return done(null, false, { message: 'Contraseña incorrecta' });
+            }
+
+            return done(null, user);
+        } catch (error) {
+            return done(error);
+        }
+    }
+));
+
+passport.serializeUser((user, done) => {
+    done(null, user.id);
+});
+
+passport.deserializeUser(async (id, done) => {
+    try {
+        const user = await User.findById(id);
+        done(null, user);
+    } catch (error) {
+        done(error);
     }
 });
 
-// Ruta protegida que requiere autenticación
-app.get('/dashboard', (req, res) => {
-    const user = req.cookies['user'];
-    // Realiza acciones adicionales basadas en la cookie, como consultar datos en MongoDB
-    res.send(`Hola, ${user}! Bienvenido al dashboard.`);
-});
+// Ruta de registro
+app.post('/register', passport.authenticate('register', {
+    successRedirect: '/login',
+    failureRedirect: '/register',
+    failureFlash: true,
+}));
 
-
-
-
-
-//*Productos*/
-
-
-const productManager = new ProductManager();
-app.use('/api', CartManager);
-
-app.post('/products', async (req, res) => {
-    const newProduct = req.body;
-    console.log(newProduct);
-    productManager.addProduct(newProduct);
-    productManager.guardarProductos();
-    res.json({ mensaje: 'Producto agregado exitosamente' });
-});
-
-app.put('/products/:pid', async (req, res) => {
-    const { pid } = req.params;
-    const updatedProduct = req.body;
-    productManager.updatedProductById(parseInt(pid), updatedProduct);
-    productManager.guardarProductos();
-    res.json({ mensaje: `Producto con id ${pid} actualizado exitosamente` });
-});
-
-app.get('/products', (req, res) => {
-    productManager.leerProductos();
-    const products = productManager.getAllProducts();
-    res.json(products);
-});
-
-app.get('/products/:pid', async (req, res) => {
-    const { pid } = req.params;
-    const product = productManager.getProductById(parseInt(pid)); B
-    if (!product) {
-        res.json({ error: 'Producto no encontrado.' });
-    } else {
-        res.json(product);
-    }
-});
-
-app.delete('/products/:pid', async (req, res) => {
-    const { pid } = req.params;
-    const result = productManager.removeProductById(parseInt(pid));
-    if (result) {
-        productManager.guardarProductos();
-        res.json({ mensaje: 'Producto eliminado exitosamente' });
-    } else {
-        res.json({ error: 'Producto no encontrado' });
-    }
-});
+// Resto del código...
 
 const httpServer = app.listen(8080, () => {
     console.log('Server ON PORT 8080');
 });
 
-init(httpServer)
+init(httpServer);

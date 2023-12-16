@@ -1,4 +1,3 @@
-
 import pkg from 'mongoose';
 const { MongoClient } = pkg;
 
@@ -6,7 +5,6 @@ class MessageRepo {
   constructor() {
 
   }
-
   async SaveMessage(user, message) {
     let url = 'mongodb+srv://mauroharmitton:Password1@cluster0.453yel4.mongodb.net/Chat?retryWrites=true&w=majority';
     pkg.connect(url);
@@ -28,7 +26,6 @@ class MessageRepo {
     })
 
     let MessageSchema = pkg.model(message, schema, dbCollection)
-
 
     const mongoMessage = new MessageSchema({
       user: user,

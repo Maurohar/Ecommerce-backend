@@ -10,9 +10,6 @@ router.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'public', 'log-in.html'));
 });
 
-router.get('/register', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'public', 'register-session.html'));
-});
 
 router.post("/login", async (req, res) => {
     const {
@@ -64,7 +61,6 @@ router.post("/register", async (req, res) => {
         });
     }
 
-
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await userloginModel.create({
@@ -72,6 +68,7 @@ router.post("/register", async (req, res) => {
         last_name,
         email,
         password: hashedPassword,
+        role,
         age
     });
     res.redirect("/login");
